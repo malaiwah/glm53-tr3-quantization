@@ -1,0 +1,16 @@
+[project]
+name = "glm53-tr3-quantization"
+version = "0.1.0"
+description = "Release-race orchestration, TR3 quantization, and KLD tooling for GLM-5.3"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Michel Belleau", email = "michel.belleau@malaiwah.com" }]
+dependencies = []
+
+[project.optional-dependencies]
+jarvis = ["jarvislabs==0.2.17"]
+huggingface = ["huggingface-hub[hf-xet]>=1.29.0"]
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,82 @@
+{
+  "authenticated": true,
+  "checked_utc": "2026-08-28T03:13:32Z",
+  "decision": {
+    "expected_runner_compute_usd": 0.1703939563869408,
+    "expected_source_download_minutes": 103.06086071790774,
+    "ram_gb": 16,
+    "reason": "fastest measured hf-xet result (243.7 MB/s); 8 vCPU regressed and 2 vCPU was only 9% slower but leaves less hashing/manifest headroom",
+    "vcpus": 4
+  },
+  "destination": "Jarvis managed filesystem 3422 (IN1, 5 TB)",
+  "hf_xet_high_performance": true,
+  "measurements": [
+    {
+      "hourly_rate_usd": 0.0496,
+      "projected_full_source_minutes": 112.43002668597336,
+      "projected_full_source_seconds": 6745.801601158401,
+      "projected_runner_compute_usd": 0.09294215539373797,
+      "ram_gb": 8,
+      "raw_authenticated_bytes_per_second": [
+        33064177,
+        35180637
+      ],
+      "vcpus": 2,
+      "xet": {
+        "bytes": 5360347104,
+        "bytes_per_second": 223347796.0,
+        "file": "model-00077-of-00282.safetensors",
+        "seconds": 24
+      }
+    },
+    {
+      "hourly_rate_usd": 0.0992,
+      "projected_full_source_minutes": 103.06086071790774,
+      "projected_full_source_seconds": 6183.651643074465,
+      "projected_runner_compute_usd": 0.1703939563869408,
+      "ram_gb": 16,
+      "raw_authenticated_bytes_per_second": [
+        77457193,
+        33553794
+      ],
+      "vcpus": 4,
+      "xet": {
+        "bytes": 5360346952,
+        "bytes_per_second": 243652134.1818182,
+        "file": "model-00078-of-00282.safetensors",
+        "seconds": 22
+      }
+    },
+    {
+      "hourly_rate_usd": 0.1984,
+      "projected_full_source_minutes": 107.62377678156756,
+      "projected_full_source_seconds": 6457.426606894053,
+      "projected_runner_compute_usd": 0.35587595522438337,
+      "ram_gb": 32,
+      "raw_authenticated_bytes_per_second": [
+        34642635,
+        48433582
+      ],
+      "vcpus": 8,
+      "xet": {
+        "bytes": 5366406816,
+        "bytes_per_second": 233322035.47826087,
+        "file": "model-00079-of-00282.safetensors",
+        "seconds": 23
+      }
+    }
+  ],
+  "notes": [
+    "Raw single-range curl varied widely and did not scale monotonically; it is not the release sizing metric.",
+    "hf-xet to the actual shared filesystem sustained 223-244 MB/s (about 1.8-1.95 Gbit/s).",
+    "HF authentication was supplied from a mode-600 token file and the token value is absent from this receipt.",
+    "A 16-vCPU resume request did not materialize; 2/4/8 vCPU results already show the throughput plateau."
+  ],
+  "receipt_sha256": "7360abf1057890f9c69ff8f09fea018204f2928133106da62886772f1436be06",
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "runner_private_ip_stable_across_2_4_8": true,
+  "schema": "glm53-hf-download-bandwidth/1",
+  "source_total_bytes": 1506659919872,
+  "token_recorded": false
+}
