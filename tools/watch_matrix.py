@@ -13,8 +13,8 @@ import urllib.request
 from pathlib import Path
 
 TARGETS = {
-    "zai-org/GLM-5.3": "models/glm53/source",
-    "zai-org/GLM-5.3-FP8": "models/glm53/fp8",
+    "zai-org/GLM-5.3-BF16": "models/glm53/bf16-official",
+    "zai-org/GLM-5.3": "models/glm53/fp8-official",
     "zai-org/GLM-5.2": "models/smoke/zai-org--GLM-5.2",
     "zai-org/GLM-5.2-FP8": "models/smoke/zai-org--GLM-5.2-FP8",
 }
@@ -149,7 +149,7 @@ def main() -> int:
                 notify(f"{repo}@{revision} detected", f"{repo} available", "high")
             if (
                 available
-                and repo in {"zai-org/GLM-5.3", "zai-org/GLM-5.3-FP8"}
+                and repo in {"zai-org/GLM-5.3-BF16", "zai-org/GLM-5.3"}
                 and repo not in children
             ):
                 for active in list(children):

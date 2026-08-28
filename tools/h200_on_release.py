@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Download GLM-5.3 then run reduced H200 CPU-offload capture")
+    parser = argparse.ArgumentParser(description="Download GLM-5.3 BF16 then run H200 capture")
     parser.add_argument("--repo", required=True)
     parser.add_argument("--revision", required=True)
     parser.add_argument("--token-file", type=Path, required=True)
@@ -26,8 +26,9 @@ def main() -> int:
     ], check=False)
     if download.returncode:
         return download.returncode
-    source = args.root / "models/downloads/zai-org--GLM-5.3"
-    receipt = args.root / "receipts/downloads/zai-org--GLM-5.3/SOURCE_DOWNLOAD_COMPLETE.json"
+    slug = args.repo.replace("/", "--")
+    source = args.root / f"models/downloads/{slug}"
+    receipt = args.root / f"receipts/downloads/{slug}/SOURCE_DOWNLOAD_COMPLETE.json"
     adapter = args.root / "work/h200-offload-adapter"
     capture = subprocess.run([
         str(args.root / "venvs/h200-vllm/bin/python"),

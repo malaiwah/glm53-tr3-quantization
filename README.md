@@ -22,18 +22,21 @@ Green:
 - Real GLM-5.2 BF16 layer-3 uniform K3/K4 work units encoded all 256 experts and rehashed exactly.
 - Full BF16 (1.507 TB) and official FP8 (755.7 GB) downloads completed exact file censuses with serialized four-worker hf-xet on an 8-vCPU/32-GB runner.
 - The two-pass `shared_h_v1` writer emits the published 9,228-tensor schema. All 76 qualified GLM-5.2 sign rows are range-fetched and sealed; template-bound real-BF16 K3/K4 parts produced the same shared-profile SHA, then passed a 206/50 whole-expert mixed materialization.
-- A 10-TB IN1 filesystem, always-on CPU runner, and two paused RTX PRO 6000 workers are prepared. P2P settings were proven to survive VM pause/resume.
-- The Jarvis-only route has an 8×H200 TP8 worker-extension gate, a full 744B BF16 load, and valid engine continuations. With 90 GiB of CPU offload per GPU, the loaded model used 85.39 GiB and left 47.76 GiB free on every H200.
-- Release automation secures that H200 through release, enforces a five-hour runtime cap, exports sealed capture windows to IN1, and then resumes the two RTX PRO 6000 quant workers.
+- A 10-TB IN1 filesystem, always-on CPU runner, and two 4×RTX PRO 6000 workers are active. P2P settings were proven to survive VM pause/resume.
+- GLM-5.3 was pinned at the first observed release SHA `30333038ada1f1dacb294a93270305a890b50c14`. Its topology is unchanged: 78 base layers plus MTP-78, 256 routed experts, natural top-8 routing, 6,144 hidden width, and 2,048 expert width.
+- `zai-org/GLM-5.3` is the 755.7-GB official FP8 checkpoint. The quant source is the separate `zai-org/GLM-5.3-BF16`, pinned at `304b8051cfb2b260b61ce0cbe330e02a98e73639`: 282 shards and 1,506,687,604,850 bytes.
+- The official BF16 metadata preflight is release-ready with 59,585 tensors, 57,600 main routed-expert tensors, and 768 MTP routed-expert tensors. IN1 and H200 downloads are active in parallel.
+- The Jarvis-only route has an 8×H200 TP8 worker-extension gate and a validated full-BF16 rehearsal. After download, production uses 70 GiB of CPU offload per GPU for the pinned BF16 capture and exports sealed windows to IN1.
 - Flat K3 and K4 are publication-priority outputs. Their exact-manifest gate permits an explicitly `UNMEASURED FIRST RELEASE — NOT QUALIFIED` public payload while forbidding fidelity claims; mixed 3.42 follows only after both flat payloads are public.
 - ntfy ten-minute heartbeats are fail-open: notification errors are logged and never stop release work.
 
 Open gates:
 
-- GLM-5.3 main weights are not released yet.
-- The release-day 8×H200 capture must still close its per-layer manifests, ten exported window seals, and IN2→IN1 bridge receipt. The GLM-5.2 rehearsal verified the exact full-model load and capture-hook entry, not a production activation artifact.
-- Flat K3/K4 may initially be public only as unmeasured payloads. Qualification still requires BF16 KLD, reference-format comparisons, and five Gilded Gnosis cold runs; synthetic-fixture weight NMSE is explicitly not a quality gate.
-- Real K3/K4 parts passed the 206/50 mixed layer materialization and trellis-shape audit. Full checkpoint assembly awaits the released source tree.
+- Both exact official-BF16 downloads must finish their file censuses before capture or encoding.
+- The release-day 8×H200 capture must still close its 75 per-layer manifests, ten exported window seals, and IN2→IN1 bridge receipt.
+- Flat K3/K4 encoding waits only for the official BF16 source receipt and capture windows; both four-GPU Jarvis workers are prepared and reserved.
+- Flat K3/K4 may initially be public only as unmeasured payloads. Qualification still requires official-FP8 KLD, reference-format comparisons, and five Gilded Gnosis cold runs; synthetic-fixture weight NMSE is explicitly not a quality gate.
+- Real K3/K4 parts passed the 206/50 mixed layer materialization and trellis-shape audit. Full GLM-5.3 assembly follows the released-source encode.
 - MTP and attention variants follow the flat K3/K4/3.42 publication path.
 
 No public model is called qualified until its sealed KLD and runtime receipts are green.
@@ -49,11 +52,11 @@ tools/build_uniform_adapter.py         hash-pinned K3/K4/K5/K6 shared-H adapter 
 tools/shared_h_overlay.py              two-pass shared-H profile and writer
 tools/fetch_shared_h_sign_template.py  ranged qualified-sign extraction
 tools/capture_controller.py            external fallback capture streaming and cleanup
-tools/build_h200_offload_capture.py    H200-compatible TP8 CPU-offload adapter
+tools/build_h200_offload_capture.py    H200-compatible TP8 capture adapter
 tools/h200_release_rearm.py            scheduled resume, runtime cap, bridge wait, pause
-tools/h200_release_capture.py          reduced-plan BF16 capture and sealed window export
+tools/h200_release_capture.py          official-BF16 capture and sealed window export
 tools/jarvis_capture_bridge.py         exact IN2→IN1 window transfer and verification
-tools/quant_dispatch.py                flat K3/K4-first quant, upload, then mixed 3.42
+tools/quant_dispatch.py                official-BF16 flat K3/K4 first, then mixed 3.42
 tools/write_unmeasured_card.py         fail-loud first-payload disclosure
 tools/unmeasured_publication_gate.py   exact-artifact public gate without fidelity claims
 tools/publication_gate.py              strict KLD/Gilded five-run qualification gate

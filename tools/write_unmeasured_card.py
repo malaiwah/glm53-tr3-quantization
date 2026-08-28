@@ -35,12 +35,14 @@ def main() -> int:
     if len(args.source_revision) != 40:
         raise SystemExit("source revision must be a full SHA")
     license_text = (args.source / "LICENSE").read_text(errors="replace")
-    if "MIT License" not in license_text:
-        raise RuntimeError("upstream license is not recognized as MIT")
+    if not license_text.startswith("GLM-5.3 License"):
+        raise RuntimeError("upstream license is not recognized as the GLM-5.3 License")
     config = json.loads((args.artifact / "config.json").read_text())
     metadata = config.get("hybrid_tr3_tail", {})
     if metadata.get("rotation_layout") != "shared_h_v1":
         raise RuntimeError("artifact is not shared_h_v1")
+    if metadata.get("source_format") != "BF16":
+        raise RuntimeError("artifact is not encoded directly from official BF16 weights")
     calibration = json.loads((args.artifact / "calibration_manifest.json").read_text())
     tokens = int(calibration.get("total_tokens") or 0)
     corpus_sha = calibration.get("corpus_sha256")
@@ -52,10 +54,11 @@ def main() -> int:
         "mixed-3.42": "GLM-5.3 TR3 mixed 3.42 bpw",
     }[args.profile]
     card = f'''---
-license: mit
+license: other
+license_name: glm-5.3
 library_name: transformers
 pipeline_tag: text-generation
-base_model: zai-org/GLM-5.3
+base_model: zai-org/GLM-5.3-BF16
 tags:
 - glm
 - exl3
@@ -71,20 +74,22 @@ inference: false
 
 > [!WARNING]
 > **UNMEASURED FIRST RELEASE — NOT QUALIFIED.** This artifact has passed physical
-> integrity and exact manifest gates only. It has not yet passed BF16 KLD,
-> official-FP8/NVFP4 comparison, five cold runs, or task evaluation. Do not infer
+> integrity and exact manifest gates only. It has not yet passed official-FP8
+> KLD, NVFP4 comparison, five cold runs, or task evaluation. Do not infer
 > that it matches or beats any other quantization.
 
-Source: `zai-org/GLM-5.3@{args.source_revision}`. Repository: `{args.repo}`.
+Source: official `zai-org/GLM-5.3-BF16@{args.source_revision}`. Repository: `{args.repo}`.
 
 ## Format
 
 - EXL3/MCG Trellis routed experts, TP4 rank-sliced.
 - `shared_h_v1` physical rotations; 9,228 EXL3 tensors per routed MoE layer.
 - Profile: `{args.profile}`.
-- Calibration: {tokens:,} tokens/layer from corpus `{corpus_sha}`.
-- Attention, shared experts, dense layers, embeddings, router, and head retain
-  source precision unless the config explicitly states otherwise.
+- Calibration: {tokens:,} tokens/layer from corpus `{corpus_sha}`, captured from
+  the pinned official BF16 checkpoint.
+- Attention, shared experts, dense layers, embeddings, router, MTP, and head
+  retain their official BF16 tensors byte-for-byte unless the config explicitly
+  states otherwise.
 
 This format is not a drop-in Transformers checkpoint. Use the pinned runtime:
 
@@ -106,8 +111,9 @@ release. Public visibility is speed-of-availability, not a fidelity claim.
 
 ## License and attribution
 
-MIT, matching the upstream source. Credits: Z.ai; Brandon Music; willfalco;
-turboderp-org/exllamav3; local-inference-lab; and malaiwah. Reproducible tooling:
+GLM-5.3 License, matching the upstream source and its conditions. Credits:
+Z.ai; Brandon Music; willfalco; turboderp-org/exllamav3;
+local-inference-lab; and malaiwah. Reproducible tooling:
 https://github.com/malaiwah/glm53-tr3-quantization
 '''
     (args.artifact / "README.md").write_text(card)

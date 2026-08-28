@@ -21,9 +21,9 @@ def canonical_sha256(value: object) -> str:
 
 
 def release_revision(path: Path) -> str | None:
-    target = json.loads(path.read_text()).get("targets", {}).get("zai-org/GLM-5.3", {})
-    revision = target.get("revision")
-    if target.get("released") is True and isinstance(revision, str) and len(revision) == 40:
+    state = json.loads(path.read_text())
+    revision = state.get("first_revision", {}).get("zai-org/GLM-5.3-BF16")
+    if isinstance(revision, str) and len(revision) == 40:
         return revision
     return None
 

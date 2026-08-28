@@ -38,9 +38,12 @@ class UnmeasuredPublicationTests(unittest.TestCase):
         artifact = base / "artifact"
         source.mkdir()
         artifact.mkdir()
-        (source / "LICENSE").write_text("MIT License\n")
+        (source / "LICENSE").write_text("GLM-5.3 License\n")
         (artifact / "config.json").write_text(json.dumps({
-            "hybrid_tr3_tail": {"rotation_layout": "shared_h_v1"}
+            "hybrid_tr3_tail": {
+                "rotation_layout": "shared_h_v1",
+                "source_format": "BF16",
+            }
         }))
         (artifact / "calibration_manifest.json").write_text(json.dumps({
             "total_tokens": 131_072,

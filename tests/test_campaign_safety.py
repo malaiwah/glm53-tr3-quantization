@@ -40,6 +40,24 @@ class CampaignSafetyTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "seal"):
                 release_gate.topology_gate(path)
 
+    def test_release_revision_stays_on_first_observed_sha(self):
+        state = {
+            "first_revision": {"zai-org/GLM-5.3-BF16": "a" * 40},
+            "targets": {
+                "zai-org/GLM-5.3-BF16": {
+                    "released": True,
+                    "revision": "b" * 40,
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "watch.json"
+            path.write_text(json.dumps(state))
+            self.assertEqual(release_gate.release_revision(path), "a" * 40)
+            state["first_revision"] = {}
+            path.write_text(json.dumps(state))
+            self.assertIsNone(release_gate.release_revision(path))
+
     def test_shared_h_mixed_key_census_is_physical_contract(self):
         shared, local = mixed_materialize.expected_keys(3)
         self.assertEqual(len(shared), 12)

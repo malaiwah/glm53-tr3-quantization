@@ -42,6 +42,10 @@ def main() -> int:
     env = dict(
         os.environ,
         HF_HOME=str(args.source.parent / "hf-cache"),
+        PATH=f"/usr/local/cuda-13.0/bin:{os.environ.get('PATH', '')}",
+        LD_LIBRARY_PATH=(
+            f"/usr/local/cuda-13.0/lib64:{os.environ.get('LD_LIBRARY_PATH', '')}"
+        ),
         VLLM_WORKER_MULTIPROC_METHOD="spawn",
         NCCL_IB_DISABLE="1",
         NCCL_P2P_LEVEL="NVL",
