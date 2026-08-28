@@ -81,12 +81,12 @@ Persistent layout:
 
 | Role | ID | Shape | Region | Local disk | Shared FS | Normal state |
 |---|---:|---|---|---:|---:|---|
-| runner | 485098 | CPU VM, 8 vCPU / 32 GB | IN1 | 100 GB | 3423 | running for release watch/downloads |
-| quant worker A | 485732 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | running; K3 role |
-| quant worker B | 485743 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | running; K4 role |
-| capture worker | 485730 | 8× H200 141 GB spot container | IN2 | 100 GB | 3445 | running production capture retry |
+| runner | 485098 | CPU VM, 8 vCPU / 32 GB | IN1 | 100 GB | 3423 | paused |
+| quant worker A | 485732 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused |
+| quant worker B | 485743 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused |
+| capture worker | 485730 | 8× H200 141 GB spot container | IN2 | 100 GB | 3445 | paused |
 
-RTX PRO 6000 spot rate at this snapshot: $0.99/GPU-hour. H200 spot rate is $1.99/GPU-hour, or $15.92/hour for TP8. The active H200 retry has a three-hour wall-clock cap; each quant worker has a sixteen-hour cap and pauses immediately after encoding. Two quant workers halve wall clock when work units are independent. CPU/seal contention must be measured rather than assumed.
+The operator stopped the race at `2026-08-28T17:10:53Z`. All campaign compute is paused and every watcher, bridge, dispatcher, capture process, and budget watcher is stopped. Managed filesystem and instance-storage billing continue while paused.
 
 Authenticated HF download measurements (`HF_XET_HIGH_PERFORMANCE=1`, distinct
 5.36 GB GLM-5.2 shards, destination filesystem 3422 (same volume, now expanded as 3423):
@@ -116,11 +116,11 @@ HF process RSS was 15.1 GiB, validating the 32-GB operational choice. Receipt:
 
 The first FP8 release revision is `30333038ada1f1dacb294a93270305a890b50c14`: 150 files / 755,663,688,045 bytes. Quantization uses the separate official `zai-org/GLM-5.3-BF16` repository at `304b8051cfb2b260b61ce0cbe330e02a98e73639`: 282 shards / 1,506,687,604,850 bytes. Its metadata preflight is release-ready with 59,585 tensors, including the expected 57,600 main and 768 MTP routed-expert tensors.
 
-IN1 and H200 download the official BF16 repository independently and close exact file censuses. The encoder consumes the IN1 copy directly; no FP8-derived or re-quantized source is accepted.
+IN1 and H200 independently closed exact official-BF16 censuses: 291 files / 1,506,693,048,122 local bytes at the same pinned revision. The encoder would consume the IN1 copy directly; no FP8-derived or re-quantized source is accepted.
 
-Original-weight capture remains Jarvis-only. The GLM-5.2 rehearsal loaded the complete 744B BF16 source on 8×H200 with vLLM TP8 and verified engine continuations. Production uses 70 GiB of CPU offload per GPU, a 133,830-token/layer plan, 1 GiB of KV cache, a 16-GiB post-load HBM floor, CUDA 13.0 first on `PATH`, and a 114.94-GiB tmpfs payload allowance. HBM, host-cgroup, and filesystem guards remain fail-closed.
+The GLM-5.2 rehearsal loaded the complete 744B BF16 source on 8×H200 with vLLM TP8 and verified engine continuations. The planned production profile used 70 GiB of CPU offload per GPU, a 133,830-token/layer plan, 1 GiB of KV cache, a 16-GiB post-load HBM floor, CUDA 13.0 first on `PATH`, and a 114.94-GiB tmpfs payload allowance.
 
-The H200 writes only to tmpfs while hooks are live, seals every layer, then copies ten immutable windows to filesystem 3445. `jarvis_capture_bridge.py` verifies every byte while moving those windows to IN1 filesystem 3423. Only then do the prepared K3/K4 encoders begin. With `GLM53_JARVIS_ONLY=1`, RunPod and Vast may still be polled for inventory but can never launch or spend.
+Production capture was stopped during BF16 model loading. No layer manifest, exported capture window, K3/K4 work unit, assembled checkpoint, upload, or public model completed. Source trees, receipts, adapters, and code remain on managed storage for an explicit later restart.
 
 ## Node preparation
 
