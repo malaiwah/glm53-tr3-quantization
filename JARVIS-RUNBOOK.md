@@ -47,6 +47,16 @@ size:    10240 GB
 mount:   /home/jl_fs
 ```
 
+The H200 capture role uses a separate IN2 volume:
+
+```text
+fs_id:   3445
+name:    glm53-h200-offload-store
+region:  IN2
+size:    4096 GB
+mount:   /home/jl_fs
+```
+
 The published docs allow 50–10,240 GB. CLI 0.2.17 incorrectly caps validation at 2,048 GB; the documented API accepted pre-use expansions 2,048 → 5,120 → 10,240 GB and rotated `fs_id` 3421 → 3422 → 3423. The volume was verified after each expansion. Never resize it while campaign nodes are attached.
 
 CLI 0.2.17 also rejects `--fs-id` for CPU VMs although the web/backend supports it. The runner was attached through the CPU resume API and verified at `/home/jl_fs`.
@@ -74,8 +84,9 @@ Persistent layout:
 | runner | 485098 | CPU VM, 8 vCPU / 32 GB | IN1 | 100 GB | 3423 | running for release watch/downloads |
 | quant worker A | 485145 | 1× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused; reserved role is four-GPU K3 |
 | quant worker B | 485216 | 1× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused after template-bound shared-H K3/K4 and mixed proof |
+| capture worker | 485692 | 8× H200 141 GB spot container | IN2 | 100 GB | 3445 | running through release; auto-pauses after bridge or cap |
 
-Worker spot rate at this snapshot: $0.99/GPU-hour. Operational runner rate: $0.1984/hour. Two workers halve wall clock when work units are independent; total GPU cost should remain approximately constant. CPU/seal contention must be measured rather than assumed.
+RTX PRO 6000 spot rate at this snapshot: $0.99/GPU-hour. H200 spot rate is $1.99/GPU-hour, or $15.92/hour for TP8. The H200 rearm has a five-hour wall-clock cap and pauses after its bridge receipt; quant workers pause immediately after encoding. Two quant workers halve wall clock when work units are independent; total GPU cost should remain approximately constant. CPU/seal contention must be measured rather than assumed.
 
 Authenticated HF download measurements (`HF_XET_HIGH_PERFORMANCE=1`, distinct
 5.36 GB GLM-5.2 shards, destination filesystem 3422 (same volume, now expanded as 3423):
@@ -103,7 +114,11 @@ resuming partial Xet state and are not clean-network benchmarks. Peak observed
 HF process RSS was 15.1 GiB, validating the 32-GB operational choice. Receipt:
 `evidence/full-download-smoke.json`.
 
-The large original-weight capture node is external: GLM-5.2 BF16 is about 1.507 TB, while Jarvis IN1 tops out at 8×96 GB = 768 GB and IN2 8×H200 at about 1.128 TB. The guarded watcher may launch only a capped Vast interruptible 8×B300 running the pinned Gilded Gnosis image. RunPod remains inventory-only until custom-image SSH is qualified. No provider can launch before a sealed GLM-5.3 topology receipt or with less than the $420 eight-hour campaign funding gate.
+Original-weight capture is Jarvis-only. The GLM-5.2 rehearsal loaded the complete 744B BF16 source on 8×H200 with vLLM TP8 and 90 GiB of CPU offload per GPU: model HBM was 85.39 GiB/GPU, post-load free HBM was 47.76 GiB/GPU, the TP8 worker extension was installed on all ranks, and engine verification returned valid continuations.
+
+Production capture uses 70 GiB of CPU offload per GPU, a 131,072-token/layer reduced plan, 1 GiB of KV cache, a 16-GiB post-load HBM floor, CUDA 13.0, and DeepGEMM disabled. Relative to the verified 90-GiB rehearsal, that setting is sized to move approximately 160 GiB of the TP8 weight allocation from the container cgroup back to HBM for the approximately 123-GB activation payload. Both the HBM and aggregate cgroup guards remain fail-closed; the release capture receipt decides whether this sizing is valid.
+
+The H200 writes only to tmpfs while hooks are live, seals every layer, then copies ten immutable 8-layer windows to filesystem 3445. `jarvis_capture_bridge.py` verifies every byte while moving those windows to IN1 filesystem 3423. Only then can `quant_dispatch.py` resume the K3/K4 workers. With `GLM53_JARVIS_ONLY=1`, RunPod and Vast may still be polled for inventory but can never launch or spend.
 
 ## Node preparation
 

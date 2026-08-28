@@ -81,6 +81,34 @@ def start_quant_dispatcher(args, revision: str) -> None:
         check=True,
     )
 
+def start_jarvis_capture_bridge(args, revision: str) -> None:
+    receipt = args.receipts / "jarvis-capture-bridge.json"
+    if receipt.is_file():
+        return
+    session = "glm53-jarvis-capture-bridge"
+    if subprocess.run(["tmux", "has-session", "-t", session], capture_output=True).returncode == 0:
+        return
+    command = [
+        sys.executable,
+        str(args.tools / "jarvis_capture_bridge.py"),
+        "--alias",
+        args.jarvis_capture_alias,
+        "--remote-root",
+        args.jarvis_capture_remote_root,
+        "--local-root",
+        str(args.capture_root),
+        "--revision",
+        revision,
+        "--receipt",
+        str(receipt),
+    ]
+    log = args.receipts / "jarvis-capture-bridge.log"
+    shell_command = f"exec {shlex.join(command)} 2>&1 | tee -a {shlex.quote(str(log))}"
+    subprocess.run(
+        ["tmux", "new-session", "-d", "-s", session, "bash", "-lc", shell_command],
+        check=True,
+    )
+
 
 
 def start_controller(args, provider: str, private_state: Path, revision: str) -> None:
@@ -169,6 +197,8 @@ def main() -> int:
     parser.add_argument("--adapter-archive", type=Path, required=True)
     parser.add_argument("--adapter-sha256", type=Path, required=True)
     parser.add_argument("--capture-root", type=Path, required=True)
+    parser.add_argument("--jarvis-capture-alias", default="glm53-h200-offload-smoke")
+    parser.add_argument("--jarvis-capture-remote-root", default="/home/jl_fs/capture-export")
     parser.add_argument("--receipts", type=Path, required=True)
     parser.add_argument("--private-dir", type=Path, required=True)
     parser.add_argument("--state", type=Path, required=True)
@@ -225,10 +255,18 @@ def main() -> int:
         revision = release_revision(args.watch_state) if args.watch_state.is_file() else None
         launch = None
         if revision:
-            try:
-                launch = launch_if_ready(args, revision)
-            except Exception as exc:
-                launch = {"selected": None, "error": str(exc)}
+            if os.environ.get("GLM53_JARVIS_ONLY") == "1":
+                try:
+                    start_jarvis_capture_bridge(args, revision)
+                    start_quant_dispatcher(args, revision)
+                    launch = {"selected": "jarvis-h200", "reason": "Jarvis-only campaign"}
+                except Exception as exc:
+                    launch = {"selected": "jarvis-h200", "error": str(exc)}
+            else:
+                try:
+                    launch = launch_if_ready(args, revision)
+                except Exception as exc:
+                    launch = {"selected": None, "error": str(exc)}
         remaining = args.target_epoch - time.time()
         interval = args.near_interval if remaining <= 3600 else args.far_interval
         body = {

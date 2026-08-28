@@ -23,15 +23,16 @@ Green:
 - Full BF16 (1.507 TB) and official FP8 (755.7 GB) downloads completed exact file censuses with serialized four-worker hf-xet on an 8-vCPU/32-GB runner.
 - The two-pass `shared_h_v1` writer emits the published 9,228-tensor schema. All 76 qualified GLM-5.2 sign rows are range-fetched and sealed; template-bound real-BF16 K3/K4 parts produced the same shared-profile SHA, then passed a 206/50 whole-expert mixed materialization.
 - A 10-TB IN1 filesystem, always-on CPU runner, and two paused RTX PRO 6000 workers are prepared. P2P settings were proven to survive VM pause/resume.
-- RunPod and Vast inventory watchers, release/topology/funding/hourly guards, capture streaming, quant dispatch, mixed-tier materialization, private upload, and receipt-bound publication gates are implemented.
-- An ntfy topic is configured for ten-minute heartbeats; HTTP errors are logged and never stop release work. Initial public-service verification returned rate-limit 429, so delivery depends on ntfy recovery.
+- The Jarvis-only route has an 8×H200 TP8 worker-extension gate, a full 744B BF16 load, and valid engine continuations. With 90 GiB of CPU offload per GPU, the loaded model used 85.39 GiB and left 47.76 GiB free on every H200.
+- Release automation secures that H200 through release, enforces a five-hour runtime cap, exports sealed capture windows to IN1, and then resumes the two RTX PRO 6000 quant workers.
+- Flat K3 and K4 are publication-priority outputs. Their exact-manifest gate permits an explicitly `UNMEASURED FIRST RELEASE — NOT QUALIFIED` public payload while forbidding fidelity claims; mixed 3.42 follows only after both flat payloads are public.
+- ntfy ten-minute heartbeats are fail-open: notification errors are logged and never stop release work.
 
 Open gates:
 
 - GLM-5.3 main weights are not released yet.
-- Template-bound K3/K4 shared-H outputs still require production-capture KLD and Gilded Gnosis runtime qualification. Synthetic-fixture weight NMSE is explicitly not a quality gate.
-- RunPod currently has no count-8 B300 stock. Vast has a guarded 8×B300 path, but its account is below the $420 eight-hour campaign funding gate.
-- Jarvis balance is $53.25; campaign GPUs are paused, but the user's separate active VMs may exhaust that account before release unless they finish or it is topped up.
+- The release-day 8×H200 capture must still close its per-layer manifests, ten exported window seals, and IN2→IN1 bridge receipt. The GLM-5.2 rehearsal verified the exact full-model load and capture-hook entry, not a production activation artifact.
+- Flat K3/K4 may initially be public only as unmeasured payloads. Qualification still requires BF16 KLD, reference-format comparisons, and five Gilded Gnosis cold runs; synthetic-fixture weight NMSE is explicitly not a quality gate.
 - Real K3/K4 parts passed the 206/50 mixed layer materialization and trellis-shape audit. Full checkpoint assembly awaits the released source tree.
 - MTP and attention variants follow the flat K3/K4/3.42 publication path.
 
@@ -47,10 +48,15 @@ tools/on_release.py                    authenticated pin, topology preflight, fu
 tools/build_uniform_adapter.py         hash-pinned K3/K4/K5/K6 shared-H adapter builder
 tools/shared_h_overlay.py              two-pass shared-H profile and writer
 tools/fetch_shared_h_sign_template.py  ranged qualified-sign extraction
-tools/capture_controller.py            external capture streaming and provider cleanup
-tools/quant_dispatch.py                capture-driven K3/K4/3.42 assembly and private upload
-tools/work_queue.py                    atomic resumable cross-node claims
-tools/publication_gate.py              artifact/KLD/Gilded five-run public gate
+tools/capture_controller.py            external fallback capture streaming and cleanup
+tools/build_h200_offload_capture.py    H200-compatible TP8 CPU-offload adapter
+tools/h200_release_rearm.py            scheduled resume, runtime cap, bridge wait, pause
+tools/h200_release_capture.py          reduced-plan BF16 capture and sealed window export
+tools/jarvis_capture_bridge.py         exact IN2→IN1 window transfer and verification
+tools/quant_dispatch.py                flat K3/K4-first quant, upload, then mixed 3.42
+tools/write_unmeasured_card.py         fail-loud first-payload disclosure
+tools/unmeasured_publication_gate.py   exact-artifact public gate without fidelity claims
+tools/publication_gate.py              strict KLD/Gilded five-run qualification gate
 tools/jl_resume_ssh.py                 resume → IP → ControlMaster → SSH_OK
 JARVIS-RUNBOOK.md                      lifecycle, persistence, cost, and P2P runbook
 ```

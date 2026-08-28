@@ -131,7 +131,49 @@ def start_private_upload(args, profile: str, repository: str, output: Path):
     ], env=env, stdout=handle, stderr=subprocess.STDOUT, text=True)
     return process, handle
 
-def build_artifact_manifest(args, profile: str, output: Path) -> Path:
+
+def publish_unmeasured(
+    args,
+    profile: str,
+    repository: str,
+    output: Path,
+    manifest: Path,
+    process: subprocess.Popen,
+    handle,
+) -> str:
+    code = process.wait()
+    handle.close()
+    if code != 0:
+        raise RuntimeError(f"private upload for {profile} exited {code}")
+    authorization = args.receipt.parent / "publication" / f"{profile}-authorization.json"
+    published = args.receipt.parent / "publication" / f"{profile}-published.json"
+    run([
+        args.assembly_python,
+        str(args.tools / "unmeasured_publication_gate.py"),
+        "--artifact-root", str(output),
+        "--artifact-manifest", str(manifest),
+        "--hf-repo", repository,
+        "--out", str(authorization),
+    ])
+    run([
+        args.assembly_python,
+        str(args.tools / "hf_public_flip.py"),
+        "--authorization", str(authorization),
+        "--token-file", str(args.hf_token_file),
+        "--repo", repository,
+        "--out", str(published),
+    ])
+    return str(published)
+
+def build_artifact_manifest(args, profile: str, repository: str, output: Path) -> Path:
+    run([
+        args.assembly_python, str(args.tools / "write_unmeasured_card.py"),
+        "--artifact", str(output),
+        "--source", str(args.source),
+        "--source-revision", args.revision,
+        "--profile", profile,
+        "--repo", repository,
+    ])
     manifest = args.receipt.parent / "artifacts" / f"{profile}.json"
     run([
         args.assembly_python, str(args.tools / "build_artifact_manifest.py"),
@@ -282,11 +324,19 @@ def main() -> int:
         mixed_output = args.outputs_root / "GLM-5.3-TR3-3.42bpw"
         uploads = []
         assemble_uniform(args, 3, capture_manifest, flat_k3)
-        k3_manifest = build_artifact_manifest(args, "flat-k3", flat_k3)
-        uploads.append(start_private_upload(args, "k3", args.k3_repo, flat_k3))
+        k3_manifest = build_artifact_manifest(args, "flat-k3", args.k3_repo, flat_k3)
+        k3_process, k3_handle = start_private_upload(args, "k3", args.k3_repo, flat_k3)
+        uploads.append(("flat-k3", args.k3_repo, flat_k3, k3_manifest, k3_process, k3_handle))
         assemble_uniform(args, 4, capture_manifest, flat_k4)
-        k4_manifest = build_artifact_manifest(args, "flat-k4", flat_k4)
-        uploads.append(start_private_upload(args, "k4", args.k4_repo, flat_k4))
+        k4_manifest = build_artifact_manifest(args, "flat-k4", args.k4_repo, flat_k4)
+        k4_process, k4_handle = start_private_upload(args, "k4", args.k4_repo, flat_k4)
+        uploads.append(("flat-k4", args.k4_repo, flat_k4, k4_manifest, k4_process, k4_handle))
+        publications = {}
+        for profile, repository, output, manifest, process, handle in uploads:
+            publications[profile] = publish_unmeasured(
+                args, profile, repository, output, manifest, process, handle
+            )
+
         mixed_work = args.work_root / "mixed-3.42-shared-h"
         mixed_receipt = args.receipt.parent / "mixed-parts.json"
         run([
@@ -314,16 +364,21 @@ def main() -> int:
                 "--io-workers", "8",
                 "--receipt", str(mixed_checkpoint_receipt),
             ])
-        mixed_manifest = build_artifact_manifest(args, "mixed-3.42", mixed_output)
-        uploads.append(
-            start_private_upload(args, "mixed-3.42", args.mixed_repo, mixed_output)
+        mixed_manifest = build_artifact_manifest(
+            args, "mixed-3.42", args.mixed_repo, mixed_output
         )
-        upload_codes = []
-        for process, handle in uploads:
-            upload_codes.append(process.wait())
-            handle.close()
-        if upload_codes != [0, 0, 0]:
-            raise RuntimeError(f"private uploads exited {upload_codes}")
+        mixed_process, mixed_handle = start_private_upload(
+            args, "mixed-3.42", args.mixed_repo, mixed_output
+        )
+        publications["mixed-3.42"] = publish_unmeasured(
+            args,
+            "mixed-3.42",
+            args.mixed_repo,
+            mixed_output,
+            mixed_manifest,
+            mixed_process,
+            mixed_handle,
+        )
         body = {
             "schema": "glm53-core-quant-dispatch/1",
             "revision": args.revision,
@@ -342,11 +397,13 @@ def main() -> int:
                 "k4": str(k4_manifest),
                 "mixed_3_42": str(mixed_manifest),
             },
-            "private_uploads": {
+            "repositories": {
                 "k3": args.k3_repo,
                 "k4": args.k4_repo,
                 "mixed_3_42": args.mixed_repo,
             },
+            "publications": publications,
+            "qualification_status": "unmeasured",
             "completed_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
         atomic_json(args.receipt, {**body, "receipt_sha256": canonical_sha256(body)})
