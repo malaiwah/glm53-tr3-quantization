@@ -71,11 +71,11 @@ Persistent layout:
 
 | Role | ID | Shape | Region | Local disk | Shared FS | Normal state |
 |---|---:|---|---|---:|---:|---|
-| runner | 485036 | CPU VM, 4 vCPU / 16 GB | IN1 | 100 GB | 3423 | running for release watch/downloads |
-| quant worker A | 485056 | 1× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused until encode |
-| quant worker B | 485057 | 1× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused until encode |
+| runner | 485098 | CPU VM, 8 vCPU / 32 GB | IN1 | 100 GB | 3423 | running for release watch/downloads |
+| quant worker A | 485145 | 1× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused; reserved role is four-GPU K3 |
+| quant worker B | 485216 | 1× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused after template-bound shared-H K3/K4 and mixed proof |
 
-Worker spot rate at this snapshot: $0.99/GPU-hour. Runner rate: $0.0992/hour. Two workers halve wall clock when work units are independent; total GPU cost should remain approximately constant. CPU/seal contention must be measured rather than assumed.
+Worker spot rate at this snapshot: $0.99/GPU-hour. Operational runner rate: $0.1984/hour. Two workers halve wall clock when work units are independent; total GPU cost should remain approximately constant. CPU/seal contention must be measured rather than assumed.
 
 Authenticated HF download measurements (`HF_XET_HIGH_PERFORMANCE=1`, distinct
 5.36 GB GLM-5.2 shards, destination filesystem 3422 (same volume, now expanded as 3423):
@@ -86,13 +86,24 @@ Authenticated HF download measurements (`HF_XET_HIGH_PERFORMANCE=1`, distinct
 | **4 vCPU / 16 GB** | **243.7 MB/s** | **103.1 min** | **$0.17** |
 | 8 vCPU / 32 GB | 233.3 MB/s | 107.6 min | $0.36 |
 
-Use 4 vCPU / 16 GB: it was the fastest observed and leaves CPU capacity for
-hashing/manifests. Network plus hf-xet plus the managed filesystem plateaus at
-roughly 1.8–1.95 Gbit/s; allocating 8 vCPUs did not improve it. Single-stream
-HTTP range tests were noisy (33–77 MB/s) and are not the release sizing metric.
-Receipt: `receipts/hf-bandwidth.json`.
+Single-file hf-xet throughput peaked at 4 vCPU / 16 GB, but two concurrent
+full-repository downloads OOM-killed that runner and even one 16-worker full
+download later exceeded its memory envelope. Production therefore uses
+**8 vCPU / 32 GB**, serializes repositories, gives GLM-5.3 priority over
+baseline smoke, and caps the HF CLI at four file workers. The network plus
+hf-xet plus managed-filesystem path still plateaus around 1.8–1.95 Gbit/s.
+Single-stream HTTP range tests were noisy (33–77 MB/s) and are not the release
+sizing metric. Receipts/logs live under `receipts/hf-bandwidth.json` and
+`/home/jl_fs/receipts/watch-matrix`.
 
-The large original-weight capture node is intentionally not provisioned yet. GLM-5.2 BF16 is about 1.507 TB. Current IN1 availability tops out at 8×96 GB = 768 GB, and current IN2 8×H200 totals about 1.128 TB; neither cleanly fits a BF16 744B model plus runtime overhead. Wait for a fitting B300/GB300-class shape or define and qualify an explicit CPU-offload/multi-node plan before spending.
+The memory-bounded full-repository rehearsal then closed both censuses without
+OOM: GLM-5.2 BF16, 295 files / 1,506,693,036,987 bytes in 2,571 s; official
+FP8, 150 files / 755,663,676,205 bytes in 1,506 s. These elapsed times include
+resuming partial Xet state and are not clean-network benchmarks. Peak observed
+HF process RSS was 15.1 GiB, validating the 32-GB operational choice. Receipt:
+`evidence/full-download-smoke.json`.
+
+The large original-weight capture node is external: GLM-5.2 BF16 is about 1.507 TB, while Jarvis IN1 tops out at 8×96 GB = 768 GB and IN2 8×H200 at about 1.128 TB. The guarded watcher may launch only a capped Vast interruptible 8×B300 running the pinned Gilded Gnosis image. RunPod remains inventory-only until custom-image SSH is qualified. No provider can launch before a sealed GLM-5.3 topology receipt or with less than the $420 eight-hour campaign funding gate.
 
 ## Node preparation
 

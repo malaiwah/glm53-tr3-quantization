@@ -1,0 +1,10 @@
+{
+  "schema": "glm53-publication-gate-smoke/1",
+  "tested_utc": "2026-08-28T05:24:00Z",
+  "valid_artifact_kld_runtime_receipts_authorized": true,
+  "same_size_artifact_sha256_tamper_rejected": true,
+  "fewer_than_five_cold_runs_rejected": true,
+  "claimed_pass_with_failed_kld_threshold_rejected": true,
+  "required_runtime_engine": "vllm-gilded-gnosis",
+  "passed": true
+}

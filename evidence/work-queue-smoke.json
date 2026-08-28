@@ -1,0 +1,12 @@
+{
+  "schema": "glm53-work-queue-smoke/1",
+  "contract_drift_rejected": true,
+  "concurrent_claimers": 20,
+  "claimed_units": 20,
+  "unique_claimed_units": 20,
+  "pending_after_claims": 0,
+  "completion_receipt_sha256_bound": true,
+  "stale_claim_requeue_verified": true,
+  "resumable_init_preserved_active_claims": true,
+  "tested_utc": "2026-08-28T04:45:00Z"
+}

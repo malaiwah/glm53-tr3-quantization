@@ -16,7 +16,7 @@ test -x "$SHARED_ROOT/bin/uv" || {
   exit 2
 }
 
-if command -v nvidia-smi >/dev/null 2>&1 && python3 -c 'import torch' >/dev/null 2>&1; then
+if [ "${SKIP_CUDA_TOOLKIT:-0}" != 1 ] && command -v nvidia-smi >/dev/null 2>&1 && python3 -c 'import torch' >/dev/null 2>&1; then
   TORCH_CUDA="$(python3 -c 'import torch; print(torch.version.cuda or "")')"
   MATCHING_NVCC="/usr/local/cuda-$TORCH_CUDA/bin/nvcc"
   if [ -n "$TORCH_CUDA" ] && [ ! -x "$MATCHING_NVCC" ]; then

@@ -58,6 +58,7 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path("/home/jl_fs"))
     parser.add_argument("--dest", type=Path)
     parser.add_argument("--skip-preflight", action="store_true")
+    parser.add_argument("--max-workers", type=int, default=4)
     args = parser.parse_args()
     if len(args.revision) != 40:
         raise SystemExit("release revision must be a full commit SHA")
@@ -123,7 +124,7 @@ def main() -> int:
     with log_path.open("w") as log:
         process = subprocess.Popen(
             [str(args.hf), "download", args.repo, "--revision", args.revision,
-             "--local-dir", str(model_root), "--max-workers", "16"],
+             "--local-dir", str(model_root), "--max-workers", str(args.max_workers)],
             env=env, stdout=log, stderr=subprocess.STDOUT,
         )
         last_heartbeat = started

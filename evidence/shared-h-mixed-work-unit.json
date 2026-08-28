@@ -1,0 +1,53 @@
+{
+  "schema": "glm53-shared-h-mixed-work-unit/1",
+  "completed_utc": "2026-08-28T07:33:00Z",
+  "source": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "layer": 3,
+    "source_expert_tensors": 768,
+    "source_expert_payload_sha256": "44392f03aac2a00469e08f9e622c14dcf2676e13209aefbbc342b699261c5842"
+  },
+  "capture": {
+    "fingerprint": "81f197fbd21f5d58ff8420efe492f8a72f173c2a880f070482036a20ee357793",
+    "tokens": 256,
+    "synthetic_smoke_fixture": true,
+    "quality_evidence": false
+  },
+  "uniform_parts": {
+    "shared_h_profile_sha256": "bb49952dc95c4c88d48ab9ea093f7f830dfc090d7554b31ee059e1a5ef02e8fa",
+    "shared_h_sign_template_sha256": "b1fdb6b1de5906e055fecab50e00a672bec8a09b09e52f277fd04da4de0ecb71",
+    "k3": {
+      "encode_seconds": 1027.6,
+      "artifact_bytes": 3628315696,
+      "artifact_sha256": "57fdb445108d01597dab76bf35a314db293cbfdfc93ed07d35d184b7e4866bcf",
+      "expert_nmse_mean": 0.024928723658965486
+    },
+    "k4": {
+      "encode_seconds": 1021.8,
+      "artifact_bytes": 4836276648,
+      "artifact_sha256": "98a19dd028f16c6985288655c473ac157841b6083f50506db2fcc5f8b1b7ec96",
+      "expert_nmse_mean": 0.0064781259609318805
+    }
+  },
+  "mixed": {
+    "k3_experts": 206,
+    "k4_experts": 50,
+    "tensor_count": 9228,
+    "artifact_bytes": 3864245656,
+    "artifact_sha256": "e7006179337ad7b47c9d1fbbb0394e3cc323d14670d0010c51e8d2a221e13067",
+    "tier_plan_sha256": "6e9ef89ed328e8a7da3c2af454b94ed518d351ebb689a4e16674fe6f612bc47f",
+    "recipe_fingerprint": "829e8ca20d5518b3065c6fa2f00a7c2a4441d92a89b78eb78fcb58c82248fa40",
+    "materializer_receipt_sha256": "33677d5c3ecaeac3a75d9f5b2e28526722801a5ddbd204acda09c4e6af5ae2bb"
+  },
+  "checks": {
+    "uniform_shared_profiles_byte_identical": true,
+    "whole_expert_tier_selection": true,
+    "mixed_trellis_shapes_match_declared_bits": true,
+    "mixed_artifact_exact_rehash": true,
+    "workers_paused_after_smoke": true,
+    "production_kld_gate_required": true,
+    "passed_physical_contract": true,
+    "passed_fidelity_gate": false
+  }
+}

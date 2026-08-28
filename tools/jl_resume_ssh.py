@@ -8,8 +8,6 @@ import subprocess
 import time
 from pathlib import Path
 
-from jarvislabs import Client
-from jarvislabs.regions import region_base_url
 
 
 def update_alias(config: Path, alias: str, hostname: str, user: str) -> None:
@@ -105,6 +103,9 @@ def main() -> int:
     args = parser.parse_args()
     if not os.environ.get("JL_API_KEY"):
         raise SystemExit("JL_API_KEY is required")
+    from jarvislabs import Client
+    from jarvislabs.regions import region_base_url
+
     client = Client()
     instance = client.instances.get(args.machine_id)
     if instance.status == "Paused":

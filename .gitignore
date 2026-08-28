@@ -6,6 +6,16 @@
 # Downloaded upstream/model artifacts
 source/
 baselines/
+!baselines/
+baselines/*
+!baselines/willfalco-3.42/
+baselines/willfalco-3.42/*
+!baselines/willfalco-3.42/LICENSE
+!baselines/willfalco-3.42/README.md
+!baselines/willfalco-3.42/config.json
+!baselines/willfalco-3.42/calibration_manifest.json
+!baselines/willfalco-3.42/tier_bitmap.json
+!baselines/willfalco-3.42/shared_h_sign_template.json
 upstream/
 work/
 cache/

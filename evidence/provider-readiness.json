@@ -1,0 +1,41 @@
+{
+  "schema": "glm53-provider-readiness/1",
+  "checked_utc": "2026-08-28T07:20:00Z",
+  "runpod": {
+    "gpu_id": "NVIDIA B300 SXM6 AC",
+    "requested_count": 8,
+    "secure_hourly_usd": 63.12,
+    "secure_capacity": false,
+    "community_capacity": false,
+    "one_hour_funding_ready": true,
+    "hourly_spend_limit_ready": true,
+    "registered_ssh_keys": 5,
+    "release_gate_rejected_unreleased_launch": true,
+    "capacity_gate_prevented_api_create": true,
+    "autonomous_launch_enabled": false,
+    "reason": "Gilded Gnosis custom-image SSH is not qualified"
+  },
+  "vast": {
+    "verified_rentable_bid_offers": 1,
+    "requested_count": 8,
+    "gpu_total_ram_mb": 2200320,
+    "nvlink_bandwidth_reported": 956.25,
+    "minimum_total_hourly_usd_with_2tb_storage": 41.388888888888886,
+    "guarded_bid_total_hourly_usd": 51.388888888888886,
+    "campaign_funding_floor_usd": 420,
+    "campaign_funding_ready": false,
+    "registered_ssh_keys": 5,
+    "release_gate_rejected_unreleased_launch": true,
+    "funding_gate_prevented_api_create": true,
+    "image": "voipmonitor/vllm@sha256:820181fbbc975cd5291c411cda9771d58fecee1636d916f508f47230df20592b"
+  },
+  "capture_controller": {
+    "provider_auto_termination_on_exit": true,
+    "runtime_cap_hours": {"runpod": 7, "vast": 8},
+    "window_receipt_verified": true,
+    "size_tamper_rejected": true,
+    "same_size_sha256_tamper_rejected": true
+  },
+  "active_campaign_provider_instances_after_tests": 0,
+  "passed": true
+}

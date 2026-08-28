@@ -226,10 +226,29 @@ def main() -> int:
     encoder_text = (encoder / "encode_b300.py").read_text() if (encoder / "encode_b300.py").is_file() else ""
     public_mixed_adapter = "--tier-bitmap" in encoder_text or "bits_per_expert" in encoder_text
     public_shared_h_adapter = "shared-h-v1" in encoder_text or "shared_h_v1" in encoder_text
-    if not public_mixed_adapter:
-        blockers.append("published B300 adapter is uniform K3 only; mixed K3/K4 adapter is absent")
-    if not public_shared_h_adapter:
-        blockers.append("published B300 adapter writes the pre-shared-H tensor schema")
+    campaign_adapter_contract = root / "work/uniform-adapter/UNIFORM_ADAPTER.txt"
+    campaign_adapter_text = (
+        campaign_adapter_contract.read_text() if campaign_adapter_contract.is_file() else ""
+    )
+    campaign_shared_h_adapter = (
+        "rotation_layout=shared_h_v1" in campaign_adapter_text
+        and "supported_bits=3,4,5,6" in campaign_adapter_text
+    )
+    mixed_evidence_path = root / "evidence/shared-h-mixed-work-unit.json"
+    try:
+        mixed_evidence = load_json(mixed_evidence_path)
+        campaign_mixed_adapter = (
+            mixed_evidence.get("checks", {}).get("passed_physical_contract") is True
+            and mixed_evidence.get("mixed", {}).get("tensor_count") == 9_228
+            and (root / "tools/mixed_materialize.py").is_file()
+            and (root / "tools/assemble_mixed_checkpoint.py").is_file()
+        )
+    except Exception:
+        campaign_mixed_adapter = False
+    if not public_mixed_adapter and not campaign_mixed_adapter:
+        blockers.append("offline mixed assembly has no sealed physical proof")
+    if not public_shared_h_adapter and not campaign_shared_h_adapter:
+        blockers.append("no sealed shared-H campaign adapter exists")
     gpu_harness = root / "tools/run_codec_smoke.py"
     if not gpu_harness.is_file():
         blockers.append("K3/K4 GPU codec harness has not been authored")
@@ -265,6 +284,8 @@ def main() -> int:
         "tooling": {
             "published_mixed_adapter": public_mixed_adapter,
             "published_shared_h_adapter": public_shared_h_adapter,
+            "campaign_shared_h_adapter": campaign_shared_h_adapter,
+            "campaign_mixed_adapter": campaign_mixed_adapter,
             "gpu_codec_harness": gpu_harness.is_file(),
             "docker_available": shutil.which("docker") is not None,
         },

@@ -1,0 +1,58 @@
+{
+  "schema": "glm53-real-work-unit-smoke/1",
+  "completed_utc": "2026-08-28T04:50:17Z",
+  "source": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "layer": 3,
+    "source_expert_payload_sha256": "44392f03aac2a00469e08f9e622c14dcf2676e13209aefbbc342b699261c5842",
+    "source_expert_tensors": 768
+  },
+  "capture": {
+    "fingerprint": "81f197fbd21f5d58ff8420efe492f8a72f173c2a880f070482036a20ee357793",
+    "tokens": 256,
+    "kind": "deterministic synthetic smoke fixture",
+    "quality_evidence": false
+  },
+  "adapter": {
+    "version": "uniform-k-v1",
+    "supported_bits": [3, 4, 5, 6],
+    "production_encoder_sha256": "5d0e2cc4702f592fc285ff7a2b68faa5d9be71672d85bf8431b86106ce23136b",
+    "exllamav3": "0.0.43"
+  },
+  "results": [
+    {
+      "bits": 3,
+      "encode_seconds": 959.5,
+      "artifact_bytes": 3666288232,
+      "artifact_sha256": "453eb65eb014c14b6aaa5cc591de312dabea37c16f93154f5152fed969f4467a",
+      "tensor_count": 12288,
+      "encoded_tp": 4,
+      "expert_nmse_mean": 0.01798682203441845,
+      "expert_nmse_min": 0.017749769697173474,
+      "expert_nmse_max": 0.018220532227696783,
+      "recipe_fingerprint": "21b36157ba79dbb0534a3aa0c7644c8b47d06371860549feff1c550c836046d7"
+    },
+    {
+      "bits": 4,
+      "encode_seconds": 941.1,
+      "artifact_bytes": 4874249624,
+      "artifact_sha256": "33cc03be69a58855a6dc18c68555dc9b313497ebc7d3da089eace8780683db8a",
+      "tensor_count": 12288,
+      "encoded_tp": 4,
+      "expert_nmse_mean": 0.0046785379806575725,
+      "expert_nmse_min": 0.004621449068427532,
+      "expert_nmse_max": 0.004740874664641523,
+      "recipe_fingerprint": "f185c64e6fba47bac0aab99fbaad650b4874a5a246166064d610350647e68814"
+    }
+  ],
+  "checks": {
+    "real_bf16_expert_payloads": true,
+    "separate_gpu_workers": true,
+    "exact_artifact_rehash": true,
+    "all_256_experts": true,
+    "all_three_projections": true,
+    "production_capture_quality": false,
+    "passed": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "glm53-shared-h-sign-template-evidence/1",
+  "completed_utc": "2026-08-28T06:45:00Z",
+  "source": {
+    "repo": "willfalco/GLM-5.2-EXL3-TR3-3.42bpw",
+    "revision": "a350292cb2038f2c31732569a711a89e5d72fd46",
+    "rotation_layout": "shared_h_v1"
+  },
+  "layers": 76,
+  "layer_range": [3, 78],
+  "rows_per_layer": {
+    "gate_up_shared_sign": 1,
+    "down_rank_signs": 4
+  },
+  "retrieval": "HTTP range: safetensors header plus contiguous shared-H payload only",
+  "full_shards_downloaded_for_bulk_extraction": false,
+  "layer3_range_matches_full_shard_signs": true,
+  "template_receipt_sha256": "b1fdb6b1de5906e055fecab50e00a672bec8a09b09e52f277fd04da4de0ecb71",
+  "template_file_sha256": "796e3ed0a71e91190debe8fbb39f8487e4f3add51879bafdaece33c25755cfb3",
+  "canonical_adapter": {
+    "rotation_layout": "shared_h_v1",
+    "shared_h_overlay_sha256": "7dbb8a1aa1e22cbc5a585f8beff69a0e7b3c1f347c9a756a7ec7db405d3a4295",
+    "archive_sha256": "c78b5079498ce3d8573717547f7113978984fa553e7e0062f4ef068f449a5080"
+  },
+  "passed": true
+}

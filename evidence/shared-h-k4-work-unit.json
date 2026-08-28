@@ -1,0 +1,43 @@
+{
+  "schema": "glm53-shared-h-work-unit/1",
+  "completed_utc": "2026-08-28T07:12:11Z",
+  "source": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "layer": 3,
+    "source_expert_tensors": 768,
+    "source_expert_payload_sha256": "44392f03aac2a00469e08f9e622c14dcf2676e13209aefbbc342b699261c5842"
+  },
+  "capture": {
+    "fingerprint": "81f197fbd21f5d58ff8420efe492f8a72f173c2a880f070482036a20ee357793",
+    "tokens": 256,
+    "synthetic_smoke_fixture": true,
+    "quality_evidence": false
+  },
+  "result": {
+    "bits": 4,
+    "rotation_layout": "shared_h_v1",
+    "tensor_count": 9228,
+    "encode_seconds": 1021.8,
+    "artifact_bytes": 4836276648,
+    "artifact_sha256": "98a19dd028f16c6985288655c473ac157841b6083f50506db2fcc5f8b1b7ec96",
+    "shared_h_profile_sha256": "bb49952dc95c4c88d48ab9ea093f7f830dfc090d7554b31ee059e1a5ef02e8fa",
+    "shared_h_sign_template_sha256": "b1fdb6b1de5906e055fecab50e00a672bec8a09b09e52f277fd04da4de0ecb71",
+    "shared_h_profile_policy": "sealed GLM-5.2 shared-H signs, geometric-mean(abs), F16 closure",
+    "expert_nmse_mean": 0.0064781259609318805,
+    "expert_nmse_min": 0.00485110375768478,
+    "expert_nmse_max": 0.00737532454745448
+  },
+  "checks": {
+    "matches_published_physical_key_schema": true,
+    "qualified_sign_template_bound": true,
+    "published_reference_tensor_count": 9228,
+    "exact_artifact_rehash": true,
+    "driver_validation": "1/1 valid layers",
+    "legacy_k4_nmse_mean": 0.0046785379806575725,
+    "synthetic_fixture_nmse_regressed": true,
+    "production_kld_gate_required": true,
+    "passed_physical_contract": true,
+    "passed_fidelity_gate": false
+  }
+}

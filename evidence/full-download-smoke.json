@@ -1,0 +1,33 @@
+{
+  "schema": "glm53-full-download-smoke/1",
+  "completed_utc": "2026-08-28T06:05:24Z",
+  "runner": {
+    "vcpus": 8,
+    "ram_gb": 32,
+    "hf_max_workers": 4,
+    "repositories_serialized": true,
+    "glm53_preemption_priority": true
+  },
+  "results": [
+    {
+      "repo": "zai-org/GLM-5.2",
+      "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+      "files": 295,
+      "bytes": 1506693036987,
+      "elapsed_seconds": 2571.364526987076,
+      "source_receipt_sha256": "7f0445581bb6d1a17578a9860a2771c4befceee4f668e6e0ffc9f1d80cb747f2"
+    },
+    {
+      "repo": "zai-org/GLM-5.2-FP8",
+      "revision": "ba978f7d347eaf65d22f1a86833408afdb953541",
+      "files": 150,
+      "bytes": 755663676205,
+      "elapsed_seconds": 1505.5309686660767,
+      "source_receipt_sha256": "9476cbc76060c526016613a8c9b7273ca0a0353c16dc2b5974f9695df0121b84"
+    }
+  ],
+  "observed_peak_hf_rss_bytes": 16218488832,
+  "prior_4vcpu_16gb_full_download_oom": true,
+  "complete_census_passed": true,
+  "passed": true
+}

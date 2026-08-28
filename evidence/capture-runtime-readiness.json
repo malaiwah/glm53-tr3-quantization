@@ -1,0 +1,18 @@
+{
+  "schema": "glm53-capture-runtime-readiness/1",
+  "checked_utc": "2026-08-28T06:50:00Z",
+  "image": "voipmonitor/vllm@sha256:820181fbbc975cd5291c411cda9771d58fecee1636d916f508f47230df20592b",
+  "image_tag_source": "gilded-gnosis-v20-vllm4d006a4-b12xcd3ce19-fi1ac6942-cu132-20260810-r34",
+  "manifest_resolved": true,
+  "capture_worker_requires_gilded_gnosis_version": true,
+  "capture_implementation": {
+    "engine": "vLLM LLM",
+    "tensor_parallel_size": 8,
+    "worker_extension": "capture_b300.CaptureWorkerExtension",
+    "engine_output_smoke": true,
+    "transformers_model_loading": false
+  },
+  "b300_runtime_behavior_verified": false,
+  "paid_launch_gate": "sealed GLM-5.3 topology + one-hour funding + live 8xB300 offer",
+  "passed_static_readiness": true
+}
