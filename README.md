@@ -24,6 +24,7 @@ Green:
 - The two-pass `shared_h_v1` writer emits the published 9,228-tensor schema. All 76 qualified GLM-5.2 sign rows are range-fetched and sealed; template-bound real-BF16 K3/K4 parts produced the same shared-profile SHA, then passed a 206/50 whole-expert mixed materialization.
 - A 10-TB IN1 filesystem, always-on CPU runner, and two paused RTX PRO 6000 workers are prepared. P2P settings were proven to survive VM pause/resume.
 - RunPod and Vast inventory watchers, release/topology/funding/hourly guards, capture streaming, quant dispatch, mixed-tier materialization, private upload, and receipt-bound publication gates are implemented.
+- An ntfy topic is configured for ten-minute heartbeats; HTTP errors are logged and never stop release work. Initial public-service verification returned rate-limit 429, so delivery depends on ntfy recovery.
 
 Open gates:
 

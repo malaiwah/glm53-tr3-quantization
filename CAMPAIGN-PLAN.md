@@ -246,7 +246,7 @@ Delete the 10-TB filesystem promptly after durable remote closure; every idle da
 5. **FIXED:** Torch/CUDA compiler mismatch is gated; a sealed prebuilt SM120 extension survives container pause.
 6. **FIXED:** `tools/distributed_env.sh` pins NCCL/GLOO interfaces and chooses a randomized torchrun port for single- or multi-node launches.
 7. **FIXED:** shared extension rebuild clobber — load the sealed prebuilt `.so`; rebuild only when import fails.
-8. **OPEN:** OMP's internal notification transport exposes no reusable runner endpoint, so protected ten-minute phone updates need an explicit webhook/ntfy credential.
+8. **MITIGATED:** the user supplied an ntfy topic and both release/provider watchers now emit unauthenticated ten-minute heartbeats without letting notification failures stop work. The public ntfy endpoint returned HTTP 429 during verification, so delivery remains service-rate-limit dependent and retries continue.
 9. **FIXED:** independent real GLM-5.2 BF16 layer-3 K3/K4 prep → encode → seal units passed. K3 took 959.5 s and K4 941.1 s for all 256 experts/768 source tensors; exact artifact rehashes matched. Receipt: `evidence/real-work-unit-smoke.json`.
 10. **OPEN:** publication cards need the final upstream license and exact source revision after release.
 
@@ -259,4 +259,4 @@ Delete the 10-TB filesystem promptly after durable remote closure; every idle da
 - **0.55**: first public 3.42 with KLD before all competitors.
 - **<0.30**: guarantee that K3 or 3.42 beats official FP8/NVFP4; historical evidence does not support a guarantee.
 
-Operational oversight is high-confidence if the session remains connected: active-rental state, logs, GPU/CPU/disk, balance, and receipts can be checked every ten minutes. Truly autonomous phone updates require the protected notification configuration.
+Operational oversight is automated on the runner: active-rental state, logs, GPU/CPU/disk, balance, and receipts are polled, while ntfy heartbeats retry every ten minutes and fail open on HTTP errors.

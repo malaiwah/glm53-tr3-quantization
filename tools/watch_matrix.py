@@ -85,14 +85,19 @@ def is_released(payload: dict | None) -> bool:
 
 def notify(message: str, title: str, priority: str = "default") -> None:
     url, token = os.environ.get("NTFY_URL"), os.environ.get("NTFY_TOKEN")
-    if not url or not token:
+    if not url:
         return
+    headers = {"Title": title, "Priority": priority}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(
-        url, data=message.encode(), method="POST",
-        headers={"Authorization": f"Bearer {token}", "Title": title, "Priority": priority},
+        url, data=message.encode(), method="POST", headers=headers,
     )
-    with urllib.request.urlopen(request, timeout=15):
-        pass
+    try:
+        with urllib.request.urlopen(request, timeout=15):
+            pass
+    except Exception as exc:
+        print(f"notification failed: {exc}", flush=True)
 
 
 def main() -> int:

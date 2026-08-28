@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import sys
 import time
+import urllib.request
 from pathlib import Path
 
 from provider_funding import runpod_balance, vast_balance
@@ -28,6 +29,21 @@ def run(command: list[str]) -> dict:
         "returncode": result.returncode,
         "output": (result.stdout + result.stderr).strip()[-2000:],
     }
+
+def notify(message: str, title: str, priority: str = "default") -> None:
+    url, token = os.environ.get("NTFY_URL"), os.environ.get("NTFY_TOKEN")
+    if not url:
+        return
+    headers = {"Title": title, "Priority": priority}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(
+        url, data=message.encode(), method="POST", headers=headers,
+    )
+    with urllib.request.urlopen(request, timeout=15):
+        pass
+
+
 
 
 def start_quant_dispatcher(args, revision: str) -> None:
@@ -180,6 +196,7 @@ def main() -> int:
     args.receipts.mkdir(parents=True, exist_ok=True)
     args.private_dir.mkdir(parents=True, exist_ok=True)
     os.chmod(args.private_dir, 0o700)
+    last_notification = 0.0
     while True:
         secure = run([
             sys.executable, str(args.tools / "runpod_b300_preflight.py"),
@@ -236,6 +253,20 @@ def main() -> int:
             "utc": body["checked_utc"], "release": revision, "funding": body["funding"],
             "launch": launch, "next": interval,
         }, sort_keys=True), flush=True)
+        now = time.time()
+        if now - last_notification >= 600:
+            try:
+                notify(
+                    f"release={revision or 'pending'}; "
+                    f"runpod8={secure['returncode'] == 0 or community['returncode'] == 0}; "
+                    f"vast8={vast['returncode'] == 0}; funding={body['funding']}; "
+                    f"launch={launch}",
+                    "GLM-5.3 campaign status",
+                    "high" if revision else "default",
+                )
+            except Exception as exc:
+                print(f"notification failed: {exc}", flush=True)
+            last_notification = now
         if args.once:
             return 0
         time.sleep(interval)
