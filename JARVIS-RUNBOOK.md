@@ -37,7 +37,7 @@ Never use unbounded logs or `--follow` from an agent. `jl exec ID -- command` is
 
 Managed filesystems are region-bound but multi-attach within a region. This was exercised concurrently from two RTX containers and one CPU VM.
 
-Provisioned release storage:
+Historical release storage:
 
 ```text
 fs_id:   3423
@@ -56,6 +56,8 @@ region:  IN2
 size:    4096 GB
 mount:   /home/jl_fs
 ```
+
+Filesystems `3423` and `3445` were permanently deleted at `2026-08-28T17:27:01Z`; their contents are no longer retained on JarvisLabs.
 
 The published docs allow 50–10,240 GB. CLI 0.2.17 incorrectly caps validation at 2,048 GB; the documented API accepted pre-use expansions 2,048 → 5,120 → 10,240 GB and rotated `fs_id` 3421 → 3422 → 3423. The volume was verified after each expansion. Never resize it while campaign nodes are attached.
 
@@ -81,12 +83,12 @@ Persistent layout:
 
 | Role | ID | Shape | Region | Local disk | Shared FS | Normal state |
 |---|---:|---|---|---:|---:|---|
-| runner | 485098 | CPU VM, 8 vCPU / 32 GB | IN1 | 100 GB | 3423 | paused |
-| quant worker A | 485732 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused |
-| quant worker B | 485743 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | paused |
-| capture worker | 485730 | 8× H200 141 GB spot container | IN2 | 100 GB | 3445 | paused |
+| runner | 485098 | CPU VM, 8 vCPU / 32 GB | IN1 | 100 GB | 3423 | destroyed |
+| quant worker A | 485732 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | destroyed |
+| quant worker B | 485743 | 4× RTX PRO 6000 96 GB spot container | IN1 | 100 GB | 3423 | destroyed |
+| capture worker | 485730 | 8× H200 141 GB spot container | IN2 | 100 GB | 3445 | destroyed |
 
-The operator stopped the race at `2026-08-28T17:10:53Z`. All campaign compute is paused and every watcher, bridge, dispatcher, capture process, and budget watcher is stopped. Managed filesystem and instance-storage billing continue while paused.
+The operator stopped the race at `2026-08-28T17:10:53Z` and permanently destroyed all four machines and both filesystems at `2026-08-28T17:27:01Z`. No campaign compute or storage billing remains for these resources.
 
 Authenticated HF download measurements (`HF_XET_HIGH_PERFORMANCE=1`, distinct
 5.36 GB GLM-5.2 shards, destination filesystem 3422 (same volume, now expanded as 3423):
@@ -116,11 +118,11 @@ HF process RSS was 15.1 GiB, validating the 32-GB operational choice. Receipt:
 
 The first FP8 release revision is `30333038ada1f1dacb294a93270305a890b50c14`: 150 files / 755,663,688,045 bytes. Quantization uses the separate official `zai-org/GLM-5.3-BF16` repository at `304b8051cfb2b260b61ce0cbe330e02a98e73639`: 282 shards / 1,506,687,604,850 bytes. Its metadata preflight is release-ready with 59,585 tensors, including the expected 57,600 main and 768 MTP routed-expert tensors.
 
-IN1 and H200 independently closed exact official-BF16 censuses: 291 files / 1,506,693,048,122 local bytes at the same pinned revision. The encoder would consume the IN1 copy directly; no FP8-derived or re-quantized source is accepted.
+IN1 and H200 independently closed exact official-BF16 censuses: 291 files / 1,506,693,048,122 local bytes at the same pinned revision. These copies were later deleted with filesystems `3423` and `3445`.
 
 The GLM-5.2 rehearsal loaded the complete 744B BF16 source on 8×H200 with vLLM TP8 and verified engine continuations. The planned production profile used 70 GiB of CPU offload per GPU, a 133,830-token/layer plan, 1 GiB of KV cache, a 16-GiB post-load HBM floor, CUDA 13.0 first on `PATH`, and a 114.94-GiB tmpfs payload allowance.
 
-Production capture was stopped during BF16 model loading. No layer manifest, exported capture window, K3/K4 work unit, assembled checkpoint, upload, or public model completed. Source trees, receipts, adapters, and code remain on managed storage for an explicit later restart.
+Production capture was stopped during BF16 model loading. No layer manifest, exported capture window, K3/K4 work unit, assembled checkpoint, upload, or public model completed. The three private Hugging Face repositories were deleted; only the public tooling and its documented evidence remain.
 
 ## Node preparation
 

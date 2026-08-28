@@ -22,7 +22,7 @@ Green:
 - Real GLM-5.2 BF16 layer-3 uniform K3/K4 work units encoded all 256 experts and rehashed exactly.
 - Full BF16 (1.507 TB) and official FP8 (755.7 GB) downloads completed exact file censuses with serialized four-worker hf-xet on an 8-vCPU/32-GB runner.
 - The two-pass `shared_h_v1` writer emits the published 9,228-tensor schema. All 76 qualified GLM-5.2 sign rows are range-fetched and sealed; template-bound real-BF16 K3/K4 parts produced the same shared-profile SHA, then passed a 206/50 whole-expert mixed materialization.
-- A 10-TB IN1 filesystem and the release source state are preserved. The CPU runner, two 4×RTX PRO 6000 workers, and 8×H200 capture node are paused.
+- The provisioned Jarvis machines and managed filesystems have been permanently deleted; no campaign compute or storage remains.
 - GLM-5.3 was pinned at the first observed release SHA `30333038ada1f1dacb294a93270305a890b50c14`. Its topology is unchanged: 78 base layers plus MTP-78, 256 routed experts, natural top-8 routing, 6,144 hidden width, and 2,048 expert width.
 - `zai-org/GLM-5.3` is the 755.7-GB official FP8 checkpoint. The quant source is the separate `zai-org/GLM-5.3-BF16`, pinned at `304b8051cfb2b260b61ce0cbe330e02a98e73639`: 282 shards and 1,506,687,604,850 bytes.
 - The official BF16 metadata preflight is release-ready with 59,585 tensors, 57,600 main routed-expert tensors, and 768 MTP routed-expert tensors. IN1 and H200 each closed an exact 291-file / 1,506,693,048,122-byte census.
@@ -31,10 +31,10 @@ Green:
 
 Campaign stopped:
 
-- The operator stopped the K3/K4 race at `2026-08-28T17:10:53Z` after competing releases moved ahead.
+- The operator stopped the K3/K4 race at `2026-08-28T17:10:53Z` after competing releases moved ahead, then authorized permanent teardown at `2026-08-28T17:27:01Z`.
 - No GLM-5.3 capture, K3/K4 work unit, assembled checkpoint, upload, or public model was completed.
-- Machines `485730`, `485732`, `485743`, and runner `485098` were paused; all watchers, bridges, dispatchers, and budget processes were stopped.
-- Source checkpoints, receipts, prepared adapters, and repository tooling remain on managed storage for an explicit later restart. Managed-filesystem storage billing continues while compute is paused.
+- Machines `485730`, `485732`, `485743`, runner `485098`, and filesystems `3423` and `3445` were destroyed.
+- Private Hugging Face repositories `GLM-5.3-TR3-3bpw`, `GLM-5.3-TR3-4bpw`, and `GLM-5.3-TR3-3.42bpw` were deleted. Only this public tooling repository remains.
 
 No public model is called qualified until its sealed KLD and runtime receipts are green.
 
