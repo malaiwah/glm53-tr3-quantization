@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import subprocess
 import time
 from pathlib import Path
@@ -15,24 +14,38 @@ from jarvislabs.regions import region_base_url
 
 def update_alias(config: Path, alias: str, hostname: str, user: str) -> None:
     config.parent.mkdir(parents=True, exist_ok=True)
-    text = config.read_text() if config.is_file() else ""
-    block = (
-        f"Host {alias}\n"
-        f"    HostName {hostname}\n"
-        f"    User {user}\n"
-        "    StrictHostKeyChecking no\n"
-        "    UserKnownHostsFile /dev/null\n"
-        "    ControlMaster auto\n"
-        "    ControlPath ~/.ssh/cm-%C\n"
-        "    ControlPersist 15m\n"
-        "    ServerAliveInterval 30\n"
-        "    ServerAliveCountMax 4\n"
+    lines = config.read_text().splitlines() if config.is_file() else []
+    block_lines = [
+        f"Host {alias}",
+        f"    HostName {hostname}",
+        f"    User {user}",
+        "    StrictHostKeyChecking no",
+        "    UserKnownHostsFile /dev/null",
+        "    ControlMaster auto",
+        "    ControlPath ~/.ssh/cm-%C",
+        "    ControlPersist 15m",
+        "    ServerAliveInterval 30",
+        "    ServerAliveCountMax 4",
+    ]
+    start = next(
+        (index for index, line in enumerate(lines) if line.strip() == f"Host {alias}"),
+        None,
     )
-    pattern = re.compile(rf"(?ms)^Host {re.escape(alias)}\n(?:(?!^Host ).*\n?)*")
-    if pattern.search(text):
-        text = pattern.sub(block + "\n", text)
+    if start is None:
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines.extend(block_lines)
     else:
-        text = text.rstrip() + ("\n\n" if text.strip() else "") + block
+        end = next(
+            (
+                index
+                for index in range(start + 1, len(lines))
+                if lines[index].startswith("Host ")
+            ),
+            len(lines),
+        )
+        lines[start:end] = block_lines + [""]
+    text = "\n".join(lines).rstrip() + "\n"
     tmp = config.with_suffix(".tmp")
     tmp.write_text(text)
     os.chmod(tmp, 0o600)
