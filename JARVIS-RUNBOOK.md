@@ -28,7 +28,7 @@ Never use unbounded logs or `--follow` from an agent. `jl exec ID -- command` is
 ## Billing and persistence
 
 - `jl pause ID` stops CPU/GPU compute billing. Instance-storage billing continues.
-- `/home` persists across pause/resume. Treat system packages and files outside `/home` as ephemeral; rerun node preparation after resume.
+- `/home` persists across pause/resume. Jarvis containers should rerun system preparation after resume. A live two-GPU RTX VM test showed the upgraded kernel, `/etc/modprobe.d` P2P files, and loaded NVIDIA/UVM parameters all persisted across pause/resume; still verify them before every paid run.
 - Destroying an instance deletes its instance-local `/home`. A managed filesystem survives instance pause, resume, and destroy.
 - The current CLI's `cost` field is accrued session cost for running instances or accrued storage cost for paused instances, not an hourly rate. Get rates from `jl gpus --json` / `jl cpus --json`.
 - Paused instances do not reserve a GPU. Resume is still capacity-dependent.
@@ -131,6 +131,11 @@ options nvidia_uvm uvm_disable_hmm=1
 ```
 
 The file on disk is not proof; reload the NVIDIA modules or reboot, then verify `/proc/driver/nvidia/params`, the UVM parameter, `nvidia-smi topo -m`, and a P2P latency test. The ForceP2P override is specifically critical on direct-attach/NODE topologies; switch topologies still require measurement because ACS can change the best path. Reference: <https://github.com/local-inference-lab/rtx6kpro/blob/master/hardware/pcie-bandwidth.md#nvidia-p2p-driver-override-forcep2p>.
+
+Persistence was exercised on a 2× RTX PRO 6000 VM: initial ID 485066 resumed as
+485071. The PHB topology, ForceP2P registry settings, `uvm_disable_hmm=1`,
+Resizable BAR, and CUDA P2P `OK` matrix were identical after resume. The VM was
+paused after the test. Receipt: `evidence/p2p-persistence.json`.
 
 ## Current shape snapshot
 

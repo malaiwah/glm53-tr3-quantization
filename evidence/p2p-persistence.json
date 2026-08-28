@@ -1,0 +1,32 @@
+{
+  "after_resume": {
+    "config_present": true,
+    "cuda_p2p": "OK",
+    "enable_resizable_bar": 1,
+    "grdma_override": 1,
+    "loaded_registry_dwords": true,
+    "uvm_active": true
+  },
+  "before_pause": {
+    "config_present": true,
+    "cuda_p2p": "OK",
+    "enable_resizable_bar": 1,
+    "grdma_override": 1,
+    "loaded_registry_dwords": true,
+    "uvm_active": true
+  },
+  "checked_utc": "2026-08-28T04:05:17Z",
+  "filesystem_id": 3423,
+  "initial_machine_id": 485066,
+  "paused_after_test": true,
+  "persists_across_pause_resume": true,
+  "receipt_sha256": "f7461642e19eaf799ee1d42ec6db2d3d5bb84a35c6b7d90c9ee2ef01076f980a",
+  "resumed_machine_id": 485071,
+  "schema": "jarvis-rtx-p2p-persistence/1",
+  "settings": {
+    "nvidia_registry_dwords": "ForceP2P=0x11;RMForceP2PType=1;RMPcieP2PType=2;GrdmaPciTopoCheckOverride=1;EnableResizableBar=1",
+    "uvm_disable_hmm": 1
+  },
+  "shape": "2x RTX-PRO6000 VM",
+  "topology": "PHB"
+}

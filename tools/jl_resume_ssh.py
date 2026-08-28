@@ -54,19 +54,33 @@ def update_alias(config: Path, alias: str, hostname: str, user: str) -> None:
 
 
 def ssh_ready(alias: str, timeout: float) -> None:
-    subprocess.run(["ssh", "-O", "exit", alias], stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL, check=False)
-    subprocess.run(["ssh", "-MNf", alias], check=True)
+    subprocess.run(
+        ["ssh", "-O", "exit", alias],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
     deadline = time.time() + timeout
     last = ""
     while time.time() < deadline:
-        result = subprocess.run(
-            ["ssh", alias, "echo", "SSH_OK"], text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        master = subprocess.run(
+            ["ssh", "-MNf", alias],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
-        last = result.stdout.strip()
-        if result.returncode == 0 and last == "SSH_OK":
-            return
+        if master.returncode == 0:
+            result = subprocess.run(
+                ["ssh", alias, "echo", "SSH_OK"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            last = result.stdout.strip()
+            if result.returncode == 0 and last == "SSH_OK":
+                return
+        else:
+            last = master.stdout.strip()
         time.sleep(2)
     raise RuntimeError(f"SSH did not become ready for {alias}: {last}")
 

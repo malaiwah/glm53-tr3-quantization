@@ -43,6 +43,35 @@ def api_model(repo: str, token: str) -> tuple[int, dict | None]:
         return exc.code, None
 
 
+def api_competitors(token: str) -> list[dict]:
+    request = urllib.request.Request(
+        "https://huggingface.co/api/models?search=GLM-5.3&sort=lastModified&direction=-1&limit=100",
+        headers={"Authorization": f"Bearer {token}", "User-Agent": "glm53-watch-matrix/1"},
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        payload = json.load(response)
+    rows = []
+    for model in payload if isinstance(payload, list) else []:
+        model_id = str(model.get("modelId") or model.get("id") or "")
+        lowered = model_id.lower()
+        tags = [str(tag).lower() for tag in model.get("tags", [])]
+        if model_id.startswith("zai-org/GLM-5.3"):
+            continue
+        if "flash" in lowered:
+            continue
+        if any(
+            term in lowered or any(term in tag for tag in tags)
+            for term in ("nvfp4", "fp4", "unsloth")
+        ):
+            rows.append({
+                "repo": model_id,
+                "revision": model.get("sha"),
+                "last_modified": model.get("lastModified"),
+                "private": model.get("private"),
+            })
+    return rows
+
+
 def is_released(payload: dict | None) -> bool:
     if not isinstance(payload, dict) or not isinstance(payload.get("siblings"), list):
         return False
@@ -92,6 +121,9 @@ def main() -> int:
     status = {repo: {"http": None, "released": False, "revision": None} for repo in TARGETS}
     download_retry_at = {repo: 0.0 for repo in TARGETS}
     last_heartbeat = 0.0
+    next_competitor_poll = 0.0
+    competitors: list[dict] = []
+    known_competitors: set[str] = set()
     notify("Watching GLM-5.2/5.2-FP8/5.3/5.3-FP8; released baselines will download as a full-path smoke.",
            "GLM release matrix started")
 
@@ -160,6 +192,25 @@ def main() -> int:
                 )
                 child_logs[repo] = log
 
+        if now >= next_competitor_poll:
+            try:
+                competitors = api_competitors(token)
+                for row in competitors:
+                    if row["repo"] not in known_competitors:
+                        known_competitors.add(row["repo"])
+                        notify(
+                            f"{row['repo']} @ {row.get('revision')} detected",
+                            "GLM-5.3 FP4/NVFP4 competitor detected",
+                            "high",
+                        )
+            except Exception as exc:
+                with (state_root / "watch.log").open("a") as handle:
+                    handle.write(json.dumps({
+                        "competitor_poll_error": f"{type(exc).__name__}: {exc}",
+                        "checked_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)),
+                    }, sort_keys=True) + "\\n")
+            next_competitor_poll = now + interval
+
         finished = []
         for repo, child in children.items():
             rc = child.poll()
@@ -181,6 +232,7 @@ def main() -> int:
             "targets": status,
             "first_revision": first_revision,
             "active_downloads": sorted(children),
+            "competitors": competitors,
             "poll_interval_seconds": interval,
             "remaining_seconds": remaining,
             "checked_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)),
